@@ -37,13 +37,14 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
 
         #creating GUI components
         self._newpanel = Panel()
+
         self._label1 = JLabel("This extension adds more options to 'Intruder(options)'")
 
         self._label2 = JLabel("These settings control the engine used for making HTTP requests in the Intruder attack.")
         self._label3 = JLabel(":  pause Intruder for specific time every number requests of attacks are made:         i.e: pause 30 seconds every 3 requests!")
         self._label4 = JLabel("Throttle")
         self._label5 = JLabel("Notice: this settings will be applied to all Intruders.\n So, you will have to press Stop botton to remove the effects for all.")
-
+        self._label6 = JLabel()
 
         self._setButton = JButton("Set", actionPerformed=self.setOptions) #name, action
         self._timeLabel = JLabel("Seconds:")
@@ -63,6 +64,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._perLabel.setBounds(392, 150, 80, 25) # For:
         self._perTextfield.setBounds(495, 150, 80, 25) #                                                      
         self._stopButton.setBounds(100, 180, 80, 25)
+        self._label6.setBounds(400, 175, 150, 100)
         self._label5.setBounds(100, 220, 1500, 100)
         self._newpanel.setLayout(None)
 
@@ -85,6 +87,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._newpanel.add(self._perTextfield)
         self._newpanel.add(self._stopButton)
         self._newpanel.add(self._label5)
+        self._newpanel.add(self._label6)
         
         #adding new tab to burp
         callbacks.customizeUiComponent(self._newpanel)
@@ -99,16 +102,17 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         return self._newpanel
 
     def setOptions(self, button):
-        self.stdout.println("set options >")
         self.per = int(self._perTextfield.getText())
         self.waitTime = int(self._timeTextfield.getText())
         self.stopOption = False
+        self._label6.setText("Applied")
         return self.per, self.waitTime, self.stopOption
 
     def stopOptions(self, button):
         self.per = 1
         self.waitTime = 0
         self.stopOption = True
+        self._label6.setText("Effects removed")
         return self.per, self.waitTime, self.stopOption
 
     def processHttpMessage(self, toolFlag, messageIsRequest, message):
