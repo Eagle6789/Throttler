@@ -114,12 +114,11 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
     def processHttpMessage(self, toolFlag, messageIsRequest, message):
         if self.stopOption == False:
             if messageIsRequest and toolFlag == self.callbacks.TOOL_INTRUDER:
-                with self.lock:
-                    self.count += 1     
+                with self.lock:     
                     if self.count == self.per: # number of attacks per seconds
                         self.count = 0
                         time.sleep(self.waitTime) #self._textfieldTime.getText())
-
+                    self.count += 1
         else:
             if self.lock.locked == True:   
                 try:
