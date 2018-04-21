@@ -82,7 +82,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._myPanel.add(self._stopButton)
 
         self._noticeLabel = swing.JLabel("Notice: this settings will be applied to all Intruders. Even if the attack was cancelled, these settings will continue to have effects unless you press Stop button.")
-        self._noticeLabel.setBounds(100, 300, 1500, 100)
+        self._noticeLabel.setBounds(30, 300, 1500, 100)
         self._myPanel.add(self._noticeLabel)
 
         self._messageLabel = swing.JLabel() # label message
@@ -90,7 +90,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._myPanel.add(self._messageLabel)
 
         self._noticeLabel2 = JLabel("Press Stop button to remove the effects or to set new throttling setting.")
-        self._noticeLabel2.setBounds(100, 315, 1500, 100)
+        self._noticeLabel2.setBounds(30, 315, 1500, 100)
         self._myPanel.add(self._noticeLabel2)
 
         #adding new tab to burp
@@ -133,7 +133,3 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
                     self.lock.release()
                 except Exception, e:
                     print "error in releasing"
-            
-#get text from textfield
-#self.field.getText()
-#.setForeground(Color.GREEN)
