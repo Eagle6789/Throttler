@@ -2,7 +2,7 @@
 
 The target of this extension is to add more options to burpsuite Intruder.</br>
 
-Throttle(pause) Intruder for specific time for each specific number of attacks(equests) that will be  made, for instance:</br>
+Throttle(pause) Intruder for specific time for each group of attacks(requests). For instance:</br>
 
 attack 1</br>
 attack 2</br>
