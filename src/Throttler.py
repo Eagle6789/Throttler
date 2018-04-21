@@ -1,4 +1,5 @@
 #burp
+from burp import IIntruderAttack, IHttpService
 from burp import IBurpExtender, IHttpListener
 from burp import ITab
 
@@ -25,72 +26,76 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
     count = 0
     waitTime = 0
     lock = threading.Lock()
-    stopOption = False
+    stat = False
 
     def registerExtenderCallbacks(self, callbacks):
 
         self.callbacks = callbacks
         callbacks.registerHttpListener(self)
-        callbacks.setExtensionName("Throttler")
+        callbacks.setExtensionName("Throttler v0.2")
 
-        #self.stdout = PrintWriter(self.callbacks.getStdout(), True)
+        self.stdout = PrintWriter(self.callbacks.getStdout(), True)
+
         #GUI configuration
         self._myPanel = swing.JPanel()
         self._myPanel.setLayout(None)
         self._myPanel.setPreferredSize(awt.Dimension(1200, 1200))
 
         self._label1 = swing.JLabel("* This extension adds more options to 'Intruder(options)'")
-        self._label1.setBounds(15, 5, 500, 100)
+        self._label1.setBounds(15, 1, 500, 100)
         self._myPanel.add(self._label1)
 
         self._label2 = swing.JLabel("* These settings control the engine used for making HTTP requests in the Intruder attack.")
-        self._label2.setBounds(15, 20, 500, 100)
+        self._label2.setBounds(15, 15, 500, 100)
         self._myPanel.add(self._label2)
 
-        self._label3 = swing.JLabel("pause Intruder for specific amount of time for each group attacks:         i.e: pause 30 seconds every 3 requests!")
-        self._label3.setBounds(246, 110, 1000, 40)
+        self._label3 = swing.JLabel(" pause Intruder for specific amount of time for each group attacks:         i.e: pause 30 seconds every 3 requests!")
+        self._label3.setBounds(246, 80, 1000, 40)
         self._myPanel.add(self._label3)
 
         self._label4 = swing.JLabel("Constant Throttling: ")
-        self._label4.setBounds(100, 110, 200, 40)
+        self._label4.setBounds(100, 80, 200, 40)
         self._label4.setForeground(Color.RED)
         self._label4.setFont(Font("System", Font.BOLD, 15))
         self._myPanel.add(self._label4)
 
         self._setButton = swing.JButton("Set", actionPerformed=self.setOptions) #name, action
-        self._setButton.setBounds(100, 150, 80, 25) # pos: x ---, pos:y |, width: x, height: y
+        self._setButton.setBounds(100, 120, 80, 25) # pos: x ---, pos:y |, width: x, height: y
         self._myPanel.add(self._setButton)
 
         self._timeLabel = swing.JLabel("Seconds:")
-        self._timeLabel.setBounds(210, 150, 80, 25)
+        self._timeLabel.setBounds(210, 120, 80, 25)
         self._myPanel.add(self._timeLabel)
 
         self._timeTextfield = swing.JTextField()
-        self._timeTextfield.setBounds(290, 150, 80, 25)
+        self._timeTextfield.setBounds(290, 120, 80, 25)
         self._myPanel.add(self._timeTextfield)
 
         self._perLabel = swing.JLabel("# of attacks")
-        self._perLabel.setBounds(392, 150, 80, 25) # For:
+        self._perLabel.setBounds(410, 120, 80, 25) # For:
         self._myPanel.add(self._perLabel)
 
         self._perTextfield  = swing.JTextField()
-        self._perTextfield.setBounds(495, 150, 80, 25) #
+        self._perTextfield.setBounds(495, 120, 80, 25) #
         self._myPanel.add(self._perTextfield)
-
-        self._stopButton    = swing.JButton("Stop", actionPerformed=self.stopOptions) #name, action
-        self._stopButton.setBounds(100, 180, 80, 25)
+        #stop button
+        self._stopButton = swing.JButton("Stop", actionPerformed=self.stopOptions) #name, action
+        self._stopButton.setBounds(280, 270, 80, 50)
         self._myPanel.add(self._stopButton)
 
-        self._noticeLabel = swing.JLabel("Notice: this settings will be applied to all Intruders. Even if the attack was cancelled, these settings will continue to have effects unless you press Stop button.")
-        self._noticeLabel.setBounds(30, 300, 1500, 100)
-        self._myPanel.add(self._noticeLabel)
-
         self._messageLabel = swing.JLabel() # label message
-        self._messageLabel.setBounds(400, 175, 150, 100)
+        self._messageLabel.setBounds(400, 270, 150, 50)
         self._myPanel.add(self._messageLabel)
 
-        self._noticeLabel2 = JLabel("Press Stop button to remove the effects or to set new throttling setting.")
-        self._noticeLabel2.setBounds(30, 315, 1500, 100)
+        self._noticeLabel = swing.JLabel("Notice: this settings will be applied to all Intruders. Even if the attack was cancelled, these settings will")
+        self._noticeLabel.setBounds(30, 600, 1500, 100)
+        self._noticeLabel.setForeground(Color.RED)
+        self._noticeLabel.setFont(Font("System", Font.BOLD, 13))
+        self._myPanel.add(self._noticeLabel)
+
+        self._noticeLabel2 = JLabel("continue to have effects unless you press Stop button. Press Stop button to remove the effects or to set new throttling setting.")
+        self._noticeLabel2.setBounds(30, 615, 1500, 100)
+        self._noticeLabel2.setFont(Font("System", Font.BOLD, 13))
         self._myPanel.add(self._noticeLabel2)
 
         #adding new tab to burp
@@ -106,30 +111,53 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         return self._myPanel
 
     def setOptions(self, button):
-        self.per = int(self._perTextfield.getText())
-        self.waitTime = int(self._timeTextfield.getText())
-        self.stopOption = False
-        self._messageLabel.setText("Applied")
-        return self.per, self.waitTime, self.stopOption
+        try:
+            self.per = int(self._perTextfield.getText())
+            self.waitTime = int(self._timeTextfield.getText())
+            self.stat = False
+            self._messageLabel.setText("Settings applied")
+            self.stdout.println("set")
+            return self.per, self.waitTime, self.stat
+
+        except Exception, e:
+            print "No values were supplied!"
+            self._messageLabel.setText("Settings can't be applied!")
 
     def stopOptions(self, button):
         self.per = 1
         self.waitTime = 0
-        self.stopOption = True
-        self._messageLabel.setText("Effects removed")
-        return self.per, self.waitTime, self.stopOption
+        self.stat = True
+        self._messageLabel.setText("Settings reseted")
+        self.stdout.println("stop")
+        self.lock.release()
+        return self.per, self.waitTime, self.stat
+
+    def resetDefault(self, button):
+        self.per = 1
+        self.waitTime = 0
+        self.stat = True
+        self.stdout.println("reset")
+        self.lock.release()
+        return self.per, self.waitTime, self.stat
 
     def processHttpMessage(self, toolFlag, messageIsRequest, message):
-        if self.stopOption == False:
+        if self.stat == False:
             if messageIsRequest and toolFlag == self.callbacks.TOOL_INTRUDER:
-                with self.lock:     
-                    if self.count == self.per: # number of attacks per seconds
-                        self.count = 0
-                        time.sleep(self.waitTime) #self._textfieldTime.getText())
-                    self.count += 1
+                self.lock.acquire() 
+                if self.count == self.per: # number of attacks per seconds
+                    self.count = 0
+                    time.sleep(self.waitTime)
+                        #self.stdout.println("before sleep")
+                self.count += 1
+                self.lock.release()
         else:
-            if self.lock.locked == True:  # try to figure if the thread is locked or not if it is lock, then unlock it
+            if self.lock.locked == True:  # try to figure out if the thread is locked or not if it is lock, then unlock it
                 try:
+                    #self.lock.acquire()
                     self.lock.release()
                 except Exception, e:
-                    print "error in releasing"
+                    print "lock error"
+        
+
+
+
