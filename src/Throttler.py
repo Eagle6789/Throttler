@@ -41,7 +41,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._label1 = JLabel("This extension adds more options to 'Intruder(options)'")
 
         self._label2 = JLabel("These settings control the engine used for making HTTP requests in the Intruder attack.")
-        self._label3 = JLabel("  pause Intruder for specific time for each number attacks(requests) you make:         i.e: pause 30 seconds every 3 requests!")
+        self._label3 = JLabel("  pause Intruder for specific time for each group attacks(requests):         i.e: pause 30 seconds every 3 requests!")
         self._label4 = JLabel("Constant Throttling:")
         self._label5 = JLabel("Notice: this settings will be applied to all Intruders.\n So, you will have to press Stop botton to remove the effects for all.")
         self._label6 = JLabel()
