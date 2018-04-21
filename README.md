@@ -2,7 +2,11 @@
 
 The target of this extension is to add more options to burpsuite Intruder.</br>
 
-<ul>* Constant throttling(pause): Intruder for specific time for each group of attacks(requests). For instance:</br> </ul>
+# LICENSE:
+
+This software is free to distribute, modify and use with the condition that credit is provided to the creator (EagleE6789@CrowdShield).
+
+<ul>Constant throttling(pause): Intruder for specific time for each group of attacks(requests). For instance:</br> </ul>
 
         attack 1</br>
         attack 2</br>
