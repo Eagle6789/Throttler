@@ -1,4 +1,4 @@
-#Throttler version: 0.1</br>
+# Throttler v0.1</br>
 
 The target of this extension is to add more options to burpsuite Intruder.</br>
 
