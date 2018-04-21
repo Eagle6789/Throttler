@@ -81,7 +81,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._stopButton.setBounds(100, 180, 80, 25)
         self._myPanel.add(self._stopButton)
 
-        self._noticeLabel = swing.JLabel("Notice: this settings will be applied to all Intruders even if the attack cancelled, settings will  have effects unless you press Stop button.")
+        self._noticeLabel = swing.JLabel("Notice: this settings will be applied to all Intruders. Even if the attack was cancelled, these settings will continue to have effects unless you press Stop button.")
         self._noticeLabel.setBounds(100, 300, 1500, 100)
         self._myPanel.add(self._noticeLabel)
 
