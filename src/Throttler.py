@@ -19,13 +19,15 @@ from java.io import PrintWriter
 #python
 import threading, time
 from array import array
+import sys
 
 
 class BurpExtender(IBurpExtender, ITab, IHttpListener):
     per = 1 
     count = 0
     waitTime = 0
-    lock = threading.Lock()
+    total = 0
+    lock_stat = 0
     stat = False
 
     def registerExtenderCallbacks(self, callbacks):
@@ -37,6 +39,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self.stdout = PrintWriter(self.callbacks.getStdout(), True)
 
         #GUI configuration
+        self._lock = threading.Lock()
         self._myPanel = swing.JPanel()
         self._myPanel.setLayout(None)
         self._myPanel.setPreferredSize(awt.Dimension(1200, 1200))
@@ -71,7 +74,7 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         self._timeTextfield.setBounds(290, 120, 80, 25)
         self._myPanel.add(self._timeTextfield)
 
-        self._perLabel = swing.JLabel("# of attacks")
+        self._perLabel = swing.JLabel("# of attacks:")
         self._perLabel.setBounds(410, 120, 80, 25) # For:
         self._myPanel.add(self._perLabel)
 
@@ -114,9 +117,8 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
         try:
             self.per = int(self._perTextfield.getText())
             self.waitTime = int(self._timeTextfield.getText())
-            self.stat = False
+            self.stat = True
             self._messageLabel.setText("Settings applied")
-            self.stdout.println("set")
             return self.per, self.waitTime, self.stat
 
         except Exception, e:
@@ -124,40 +126,53 @@ class BurpExtender(IBurpExtender, ITab, IHttpListener):
             self._messageLabel.setText("Settings can't be applied!")
 
     def stopOptions(self, button):
-        self.per = 1
+        self.per = 0
         self.waitTime = 0
-        self.stat = True
+        self.stat = False
         self._messageLabel.setText("Settings reseted")
-        self.stdout.println("stop")
-        self.lock.release()
+        self.lock_stat = 1
+        if self._lock.locked == True:  # try to figure out if the thread is locked or not if it is lock, then unlock it
+            try:
+                #self._lock.acquire()
+                self._lock.release()
+            except Exception, e:
+                print "release lock error"
         return self.per, self.waitTime, self.stat
 
     def resetDefault(self, button):
-        self.per = 1
+        self.per = 0
         self.waitTime = 0
-        self.stat = True
+        self.stat = False
         self.stdout.println("reset")
-        self.lock.release()
+        try:
+            for i in range(self.total):
+                  self._lock.release()
+        except Exception, e:
+            print e
+        
         return self.per, self.waitTime, self.stat
 
     def processHttpMessage(self, toolFlag, messageIsRequest, message):
-        if self.stat == False:
+        if self.stat == True:
             if messageIsRequest and toolFlag == self.callbacks.TOOL_INTRUDER:
-                self.lock.acquire() 
                 if self.count == self.per: # number of attacks per seconds
+                    if self.lock_stat == 1:
+                        try:
+                            if self._lock.locked == True:
+                                self._lock.release()
+                            
+                        except Exception, e:
+                                print e
+                        self.lock_stat = 0
+                    self.total += 1
+                    with self._lock:
+                        time.sleep(self.waitTime)
                     self.count = 0
-                    time.sleep(self.waitTime)
-                        #self.stdout.println("before sleep")
                 self.count += 1
-                self.lock.release()
         else:
-            if self.lock.locked == True:  # try to figure out if the thread is locked or not if it is lock, then unlock it
+            if self._lock.locked == True:  # try to figure out if the thread is locked or not if it is lock, then unlock it
                 try:
-                    #self.lock.acquire()
-                    self.lock.release()
+                    #self._lock.acquire()
+                    self._lock.release()
                 except Exception, e:
-                    print "lock error"
-        
-
-
-
+                    print "release lock error"
